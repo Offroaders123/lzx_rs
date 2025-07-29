@@ -6,4 +6,5 @@ edition = "2024"
 [lib]
 name = "lzx_rs"
 
-[dependencies]
+[build-dependencies]
+cc = "1.2.30"
