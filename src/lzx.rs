@@ -1,4 +1,4 @@
-#[repr(C)]
+#[repr(transparent)]
 pub struct LzxState;
 
 unsafe extern "C" {
