@@ -1,13 +1,13 @@
 #[repr(C)]
-pub struct LzxState {
+struct LzxState {
     _private: [u8; 0],
 }
 
 unsafe extern "C" {
-    pub fn lzx_init(window: i32) -> *mut LzxState;
-    pub fn lzx_teardown(p_state: *mut LzxState) -> ();
-    pub fn lzx_reset(p_state: *mut LzxState) -> ();
-    pub fn lzx_decompress(
+    fn lzx_init(window: i32) -> *mut LzxState;
+    fn lzx_teardown(p_state: *mut LzxState) -> ();
+    fn lzx_reset(p_state: *mut LzxState) -> ();
+    fn lzx_decompress(
         p_state: *mut LzxState,
         inpos: *mut u8,
         outpos: *mut u8,

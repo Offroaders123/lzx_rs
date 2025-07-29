@@ -1,1 +1,3 @@
-pub mod lzx;
+mod lzx;
+
+pub use crate::lzx::*;
