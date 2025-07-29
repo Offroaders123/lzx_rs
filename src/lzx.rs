@@ -1,5 +1,7 @@
-#[repr(transparent)]
-pub struct LzxState;
+#[repr(C)]
+pub struct LzxState {
+    _private: [u8; 0],
+}
 
 unsafe extern "C" {
     pub fn lzx_init(window: i32) -> *mut LzxState;
