@@ -1,10 +1,10 @@
 #pragma once
 
-#include "include/lce/processor.hpp"
+// #include "include/lce/processor.hpp"
 
-#include "../data/DataReader.hpp"
-#include "../data/DataWriter.hpp"
-#include "include/lzx/lzx.h"
+// #include "../data/DataReader.hpp"
+// #include "../data/DataWriter.hpp"
+#include "lzx.h"
 
 // https://github.com/matchaxnb/wimlib/blob/master/src/lzx-compress.c
 

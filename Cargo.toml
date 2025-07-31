@@ -8,3 +8,6 @@ name = "lzx_rs"
 
 [build-dependencies]
 cc = "1.2.30"
+
+[dependencies]
+byteorder = "1.5.0"
