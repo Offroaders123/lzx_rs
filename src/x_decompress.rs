@@ -44,21 +44,21 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
 
     loop {
         let mut dst_size: usize = CHUNK_SIZE;
-
+        {
         let peek: &[u8] = reader.fill_buf().map_err(|_| XmemErr::Overflow)?;
         if peek.is_empty() {
             break;
         }
-
-        if peek[0] == 0xFF {
+        }
+        if reader.read_u8().map_err(|_| XmemErr::Overflow)? == 0xFF {
             reader.consume(1);
-            if reader.get_ref().len() - reader.position() as usize < 2 {
+            if (reader.get_ref().len() - reader.position() as usize) < 2 {
                 return Err(XmemErr::Overflow);
             }
             dst_size = reader.read_u16::<LittleEndian>().map_err(|_| XmemErr::Overflow)? as usize;
         }
 
-        if reader.get_ref().len() - reader.position() as usize < 2 {
+        if (reader.get_ref().len() - reader.position() as usize) < 2 {
             return Err(XmemErr::Overflow);
         }
         let src_size = reader.read_u16::<LittleEndian>().map_err(|_| XmemErr::Overflow)? as usize;
@@ -67,7 +67,7 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
             return Err(XmemErr::BadData);
         }
 
-        if reader.get_ref().len() - reader.position() as usize < src_size {
+        if (reader.get_ref().len() - reader.position() as usize) < src_size {
             return Err(XmemErr::Overflow);
         }
 
@@ -78,7 +78,7 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
 
         writer.extend_from_slice(&dst[..dst_size]);
 
-        if peek[0] == 0xFF {
+        if reader.read_u8().map_err(|_| XmemErr::Overflow)? == 0xFF {
             break;
         }
     }
