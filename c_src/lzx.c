@@ -524,8 +524,6 @@ int lzx_decompress(struct lzx_state* pState, unsigned char* inpos, unsigned char
         pState->header_read = 1;
     }
 
-    printf("'actual size' => %i\n", pState->actual_size);
-
     /* main decoding loop */
     while (togo > 0) {
         /* last block finished, new block expected */
@@ -541,19 +539,13 @@ int lzx_decompress(struct lzx_state* pState, unsigned char* inpos, unsigned char
             READ_BITS(j, 8);
             pState->block_remaining = pState->block_length = (i << 8) | j;
 
-            printf("Okay broke before the switch statement, this is still working as of yet.\n");
-
-            printf("pState->block_type: %i\n\n", pState->block_type);
-
             switch (pState->block_type) {
             case LZX_BLOCKTYPE_ALIGNED:
                 for (i = 0; i < 8; i++) {
                     READ_BITS(j, 3);
                     LENTABLE(ALIGNED)[i] = j;
                 }
-                printf("Just before BUILD_TABLE\n");
                 BUILD_TABLE(ALIGNED);
-                printf("After build table? <nope>\n");
                 /* rest of aligned header is same as verbatim */
 
             case LZX_BLOCKTYPE_VERBATIM:
@@ -581,11 +573,8 @@ int lzx_decompress(struct lzx_state* pState, unsigned char* inpos, unsigned char
                 break;
 
             default:
-                printf("Broken exit branch!\n");
                 return DECR_ILLEGALDATA;
             }
-
-            printf("After the switch statement? <nope>\n");
         }
 
         /* buffer exhaustion check */
@@ -598,13 +587,9 @@ int lzx_decompress(struct lzx_state* pState, unsigned char* inpos, unsigned char
              * remaining - in this boundary case they aren't really part of
              * the compressed data)
              */
-            if (inpos > (endinp + 2) || bitsleft < 16) {
-                printf("I BROKE HERE! inpos > endinp\n");
+            if (inpos > (endinp + 2) || bitsleft < 16)
                 return DECR_ILLEGALDATA;
-            }
         }
-
-        printf("Nope, still goin'!!!\n");
 
         while ((this_run = pState->block_remaining) > 0 && togo > 0) {
             if (this_run > togo)
