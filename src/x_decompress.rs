@@ -73,7 +73,7 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
         if (reader.get_ref().len() - reader.position() as usize) < 2 {
             return Err(XmemErr::Overflow);
         }
-        let src_size = reader
+        let src_size: usize = reader
             .read_u16::<LittleEndian>()
             .map_err(|_| XmemErr::Overflow)? as usize;
 
