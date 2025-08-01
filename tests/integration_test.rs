@@ -22,7 +22,7 @@ impl From<XmemErr> for DecompressError {
 
 #[test]
 fn decompress_xbox_360() -> Result<(), DecompressError> {
-    let world: Vec<u8> = read("tests/XBOX360_TU74.dat")?;
+    let world: Vec<u8> = read("tests/XBOX360_TU69.bin")?;
     let mut unzipped: Vec<u8> = vec![];
     x_decompress(&world, &mut unzipped)?;
     println!("{:?}", unzipped);
