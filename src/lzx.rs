@@ -16,6 +16,7 @@ unsafe extern "C" {
     ) -> i32;
 }
 
+#[derive(Debug)]
 pub enum LzxError {
     DataFormat,
     IllegalData,

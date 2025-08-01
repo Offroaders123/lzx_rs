@@ -4,7 +4,7 @@ use std::{
     io::{BufRead, Cursor, Read},
 };
 
-use crate::{Lzx, peekable_byte_reader::PeekableByteReader};
+use crate::{Lzx, LzxError, peekable_byte_reader::PeekableByteReader};
 
 #[derive(Debug)]
 pub enum XmemErr {
@@ -12,7 +12,7 @@ pub enum XmemErr {
     Overflow,
     BadData,
     LzxInit,
-    LzxRun,
+    LzxRun(LzxError),
     BufferTooSmall,
 }
 
@@ -26,7 +26,7 @@ impl fmt::Display for XmemErr {
                 XmemErr::Overflow => "input exhausted",
                 XmemErr::BadData => "invalid block header",
                 XmemErr::LzxInit => "cannot initialise LZX",
-                XmemErr::LzxRun => "LZX decompression failed",
+                XmemErr::LzxRun(_) => "LZX decompression failed",
                 XmemErr::BufferTooSmall => "output buffer too small",
             }
         )
@@ -90,7 +90,7 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
             .map_err(|_| XmemErr::Overflow)?;
 
         lzx.decompress(&mut src[..src_size], &mut dst[..dst_size])
-            .map_err(|_| XmemErr::LzxRun)?;
+            .map_err(XmemErr::LzxRun)?;
 
         writer.extend_from_slice(&dst[..dst_size]);
 
