@@ -1,5 +1,8 @@
-use std::{error, fmt, io::{BufRead, Cursor, Read}};
-use byteorder::{ReadBytesExt, LittleEndian};
+use byteorder::{LittleEndian, ReadBytesExt};
+use std::{
+    error, fmt,
+    io::{BufRead, Cursor, Read},
+};
 
 use crate::Lzx;
 
@@ -44,24 +47,30 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
 
     loop {
         let mut dst_size: usize = CHUNK_SIZE;
+
         {
-        let peek: &[u8] = reader.fill_buf().map_err(|_| XmemErr::Overflow)?;
-        if peek.is_empty() {
-            break;
+            let peek: &[u8] = reader.fill_buf().map_err(|_| XmemErr::Overflow)?;
+            if peek.is_empty() {
+                break;
+            }
         }
-        }
+
         if reader.read_u8().map_err(|_| XmemErr::Overflow)? == 0xFF {
             reader.consume(1);
             if (reader.get_ref().len() - reader.position() as usize) < 2 {
                 return Err(XmemErr::Overflow);
             }
-            dst_size = reader.read_u16::<LittleEndian>().map_err(|_| XmemErr::Overflow)? as usize;
+            dst_size = reader
+                .read_u16::<LittleEndian>()
+                .map_err(|_| XmemErr::Overflow)? as usize;
         }
 
         if (reader.get_ref().len() - reader.position() as usize) < 2 {
             return Err(XmemErr::Overflow);
         }
-        let src_size = reader.read_u16::<LittleEndian>().map_err(|_| XmemErr::Overflow)? as usize;
+        let src_size = reader
+            .read_u16::<LittleEndian>()
+            .map_err(|_| XmemErr::Overflow)? as usize;
 
         if src_size == 0 || src_size > src.len() || dst_size == 0 || dst_size > dst.len() {
             return Err(XmemErr::BadData);
@@ -71,7 +80,9 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
             return Err(XmemErr::Overflow);
         }
 
-        reader.read_exact(&mut src[..src_size]).map_err(|_| XmemErr::Overflow)?;
+        reader
+            .read_exact(&mut src[..src_size])
+            .map_err(|_| XmemErr::Overflow)?;
 
         lzx.decompress(&mut src[..src_size], &mut dst[..dst_size])
             .map_err(|_| XmemErr::LzxRun)?;
@@ -90,4 +101,3 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
     output[..writer.len()].copy_from_slice(&writer);
     Ok(writer.len())
 }
-
