@@ -4,7 +4,9 @@ use lzx_rs::{XmemErr, x_decompress};
 
 #[derive(Debug)]
 enum DecompressError {
+    #[allow(dead_code)]
     Io(io::Error),
+    #[allow(dead_code)]
     XmemErr(XmemErr),
 }
 
