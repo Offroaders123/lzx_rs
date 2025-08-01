@@ -48,14 +48,12 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
     loop {
         let mut dst_size: usize = CHUNK_SIZE;
 
-        {
-            let peek: &[u8] = reader.fill_buf().map_err(|_| XmemErr::Overflow)?;
-            if peek.is_empty() {
-                break;
-            }
+        let peek: &[u8] = reader.fill_buf().map_err(|_| XmemErr::Overflow)?;
+        if peek.is_empty() {
+            break;
         }
 
-        if reader.read_u8().map_err(|_| XmemErr::Overflow)? == 0xFF {
+        if peek[0] == 0xFF {
             reader.consume(1);
             if (reader.get_ref().len() - reader.position() as usize) < 2 {
                 return Err(XmemErr::Overflow);
@@ -89,7 +87,7 @@ pub fn x_decompress(input: &[u8], output: &mut [u8]) -> Result<usize, XmemErr> {
 
         writer.extend_from_slice(&dst[..dst_size]);
 
-        if reader.read_u8().map_err(|_| XmemErr::Overflow)? == 0xFF {
+        if peek[0] == 0xFF {
             break;
         }
     }
