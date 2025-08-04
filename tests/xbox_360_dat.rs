@@ -110,10 +110,7 @@ impl Xbox360Dat {
 }
 
 impl ConsoleParser for Xbox360Dat {
-    fn inflate_from_layout(
-        &mut self,
-        the_file_path: &PathBuf,
-    ) -> Result<Vec<u8>, Status> {
+    fn inflate_from_layout(&mut self, the_file_path: &PathBuf) -> Result<Vec<u8>, Status> {
         self.m_file_path = Some(the_file_path.clone());
 
         self.inflate_listing()
@@ -122,9 +119,7 @@ impl ConsoleParser for Xbox360Dat {
     fn inflate_listing(&self) -> Result<Vec<u8>, Status> {
         let file_path: &PathBuf = match &self.m_file_path {
             Some(path) => path,
-            None => {
-                Err(Status::FileError)
-            }?
+            None => Err(Status::FileError)?,
         };
 
         let file_data: Buffer = match fs::read(file_path) {
@@ -133,9 +128,7 @@ impl ConsoleParser for Xbox360Dat {
                 buf.data = bytes;
                 buf
             }
-            Err(_) => {
-                Err(Status::FileError)
-            }?
+            Err(_) => Err(Status::FileError)?,
         };
 
         // if (!saveProject.m_stateSettings.shouldDecompress()) {
@@ -175,9 +168,7 @@ impl ConsoleParser for Xbox360Dat {
 
         let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice) {
             Ok(_) => dst_slice.to_vec(),
-            Err(err) => {
-                Err(Status::Decompress)?
-            }
+            Err(err) => Err(Status::Decompress)?,
         };
 
         if inflated_data.is_empty() {
