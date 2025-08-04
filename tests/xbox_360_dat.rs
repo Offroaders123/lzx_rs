@@ -5,14 +5,14 @@ use lzx_rs::x_decompress;
 
 pub trait ConsoleParser {
     // fn discover_save_layout(&self, root_folder: &PathBuf) -> SaveLayout;
-    fn inflate_from_layout(&mut self, the_save: &SaveProject, in_file_path: &PathBuf) -> Status;
+    fn inflate_from_layout(&mut self, the_save: &SaveProject, in_file_path: &PathBuf) -> Result<&[u8], Status>;
 
     // fn deflate_to_save(&self, save_project: &SaveProject, the_settings: &WriteSettings) -> i32;
     // fn supply_required_defaults(&self, save_project: &SaveProject) -> ();
 
     // protected:
 
-    fn inflate_listing(&self, save_project: &SaveProject) -> Status;
+    fn inflate_listing(&self, save_project: &SaveProject) -> Result<&[u8], Status>;
     // fn deflate_listing(
     //     &self,
     //     game_data_path: &PathBuf,
@@ -114,12 +114,12 @@ impl ConsoleParser for Xbox360Dat {
         &mut self,
         save_project: &SaveProject,
         the_file_path: &PathBuf,
-    ) -> Status {
+    ) -> Result<&[u8], Status> {
         self.m_file_path = Some(the_file_path.clone());
 
-        let status: Status = self.inflate_listing(save_project);
+        let status: Result<&[u8], Status> = self.inflate_listing(save_project);
         match status {
-            Status::Success => (),
+            Err(Status::Success) => (),
             _ => {
                 println!("failed to extract listing\n");
                 return status;
@@ -128,15 +128,15 @@ impl ConsoleParser for Xbox360Dat {
 
         // readFileInfo(save_project);
 
-        return Status::Success;
+        return Err(Status::Success);
     }
 
-    fn inflate_listing(&self, save_project: &SaveProject) -> Status {
+    fn inflate_listing(&self, save_project: &SaveProject) -> Result<&[u8], Status> {
         let file_path: &PathBuf = match &self.m_file_path {
             Some(path) => path,
             None => {
                 eprintln!("ERROR_4: File path not set");
-                return Status::FileError;
+                return Err(Status::FileError);
             }
         };
 
@@ -148,7 +148,7 @@ impl ConsoleParser for Xbox360Dat {
             }
             Err(_) => {
                 eprintln!("ERROR_4: {}", file_path.display());
-                return Status::FileError;
+                return Err(Status::FileError);
             }
         };
 
@@ -159,30 +159,30 @@ impl ConsoleParser for Xbox360Dat {
 
         if file_data.size() < 12 {
             eprintln!("ERROR_5");
-            return Status::FileError;
+            return Err(Status::FileError);
         }
         let mut reader = Cursor::new(file_data.data());
 
         let src_size: u32 = match reader.read_u32::<BigEndian>() {
             Ok(val) => val.wrapping_sub(8),
-            Err(_) => return Status::FileError,
+            Err(_) => return Err(Status::FileError),
         };
 
         let _skip: () = match reader.read_i32::<BigEndian>() {
             Ok(_) => (),
-            Err(_) => return Status::FileError,
+            Err(_) => return Err(Status::FileError),
         };
 
         let file_size: u32 = match reader.read_u32::<BigEndian>() {
             Ok(val) => val,
-            Err(_) => return Status::FileError,
+            Err(_) => return Err(Status::FileError),
         };
 
         // Allocate output buffer
         let mut inflated_data: Buffer = Buffer::new();
         if !inflated_data.allocate(file_size as usize) {
             eprintln!("ERROR_1: {}", file_size);
-            return Status::MallocFailed;
+            return Err(Status::MallocFailed);
         }
 
         // Perform decompression
@@ -193,16 +193,16 @@ impl ConsoleParser for Xbox360Dat {
             Ok(_) => (),
             Err(err) => {
                 eprintln!("ERROR_3: ERROR_3 ({:?})", err);
-                return Status::Decompress;
+                return Err(Status::Decompress);
             }
         }
 
         if inflated_data.is_empty() {
             eprintln!("ERROR_3");
-            return Status::Decompress;
+            return Err(Status::Decompress);
         }
 
-        Status::Success
+        Err(Status::Success)
         // FileListing::read_listing(save_project, &inflated_data, &self.m_console)
     }
 }
