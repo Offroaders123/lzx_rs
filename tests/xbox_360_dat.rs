@@ -116,25 +116,15 @@ impl ConsoleParser for Xbox360Dat {
     ) -> Result<Vec<u8>, Status> {
         self.m_file_path = Some(the_file_path.clone());
 
-        let status: Result<Vec<u8>, Status> = self.inflate_listing();
-        let bytes: Vec<u8> = match status {
-            Ok(bytes) => bytes,
-            _ => {
-                return status;
-            }
-        };
-
-        // readFileInfo(save_project);
-
-        return Ok(bytes);
+        self.inflate_listing()
     }
 
     fn inflate_listing(&self) -> Result<Vec<u8>, Status> {
         let file_path: &PathBuf = match &self.m_file_path {
             Some(path) => path,
             None => {
-                return Err(Status::FileError);
-            }
+                Err(Status::FileError)
+            }?
         };
 
         let file_data: Buffer = match fs::read(file_path) {
@@ -144,8 +134,8 @@ impl ConsoleParser for Xbox360Dat {
                 buf
             }
             Err(_) => {
-                return Err(Status::FileError);
-            }
+                Err(Status::FileError)
+            }?
         };
 
         // if (!saveProject.m_stateSettings.shouldDecompress()) {
@@ -160,17 +150,17 @@ impl ConsoleParser for Xbox360Dat {
 
         let src_size: u32 = match reader.read_u32::<BigEndian>() {
             Ok(val) => val.wrapping_sub(8),
-            Err(_) => return Err(Status::FileError),
+            Err(_) => Err(Status::FileError)?,
         };
 
         let _skip: () = match reader.read_i32::<BigEndian>() {
             Ok(_) => (),
-            Err(_) => return Err(Status::FileError),
+            Err(_) => Err(Status::FileError)?,
         };
 
         let file_size: u32 = match reader.read_u32::<BigEndian>() {
             Ok(val) => val,
-            Err(_) => return Err(Status::FileError),
+            Err(_) => Err(Status::FileError)?,
         };
 
         // Allocate output buffer
@@ -186,7 +176,7 @@ impl ConsoleParser for Xbox360Dat {
         let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice) {
             Ok(_) => dst_slice.to_vec(),
             Err(err) => {
-                return Err(Status::Decompress);
+                Err(Status::Decompress)?
             }
         };
 
