@@ -119,7 +119,7 @@ impl ConsoleParser for Xbox360Dat {
 
         let status: Status = self.inflate_listing(save_project);
         match status {
-            Status::Compress => (),
+            Status::Success => (),
             _ => {
                 println!("failed to extract listing\n");
                 return status;
