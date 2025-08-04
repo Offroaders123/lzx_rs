@@ -121,7 +121,6 @@ impl ConsoleParser for Xbox360Dat {
         let bytes: Vec<u8> = match status {
             Ok(bytes) => bytes,
             _ => {
-                println!("failed to extract listing\n");
                 return status;
             }
         };
@@ -135,7 +134,6 @@ impl ConsoleParser for Xbox360Dat {
         let file_path: &PathBuf = match &self.m_file_path {
             Some(path) => path,
             None => {
-                eprintln!("ERROR_4: File path not set");
                 return Err(Status::FileError);
             }
         };
@@ -147,7 +145,6 @@ impl ConsoleParser for Xbox360Dat {
                 buf
             }
             Err(_) => {
-                eprintln!("ERROR_4: {}", file_path.display());
                 return Err(Status::FileError);
             }
         };
@@ -158,7 +155,6 @@ impl ConsoleParser for Xbox360Dat {
         // }
 
         if file_data.size() < 12 {
-            eprintln!("ERROR_5");
             return Err(Status::FileError);
         }
         let mut reader = Cursor::new(file_data.data());
@@ -181,7 +177,6 @@ impl ConsoleParser for Xbox360Dat {
         // Allocate output buffer
         let mut inflated_data: Buffer = Buffer::new();
         if !inflated_data.allocate(file_size as usize) {
-            eprintln!("ERROR_1: {}", file_size);
             return Err(Status::MallocFailed);
         }
 
@@ -192,13 +187,11 @@ impl ConsoleParser for Xbox360Dat {
         let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice) {
             Ok(_) => dst_slice.to_vec(),
             Err(err) => {
-                eprintln!("ERROR_3: ERROR_3 ({:?})", err);
                 return Err(Status::Decompress);
             }
         };
 
         if inflated_data.is_empty() {
-            eprintln!("ERROR_3");
             return Err(Status::Decompress);
         }
 
