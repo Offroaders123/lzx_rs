@@ -118,17 +118,17 @@ impl ConsoleParser for Xbox360Dat {
         self.m_file_path = Some(the_file_path.clone());
 
         let status: Result<&[u8], Status> = self.inflate_listing(save_project);
-        match status {
-            Err(Status::Success) => (),
+        let bytes: &[u8] = match status {
+            Ok(bytes) => bytes,
             _ => {
                 println!("failed to extract listing\n");
                 return status;
             }
-        }
+        };
 
         // readFileInfo(save_project);
 
-        return Err(Status::Success);
+        return Ok(bytes);
     }
 
     fn inflate_listing(&self, save_project: &SaveProject) -> Result<&[u8], Status> {
@@ -189,26 +189,26 @@ impl ConsoleParser for Xbox360Dat {
         let src_slice: &[u8] = &reader.into_inner()[8..(8 + src_size as usize)];
         let dst_slice: &mut [u8] = inflated_data.data_mut();
 
-        match x_decompress(src_slice, dst_slice) {
-            Ok(_) => (),
+        let bytes: &[u8] = match x_decompress(src_slice, dst_slice) {
+            Ok(_) => dst_slice,
             Err(err) => {
                 eprintln!("ERROR_3: ERROR_3 ({:?})", err);
                 return Err(Status::Decompress);
             }
-        }
+        };
 
         if inflated_data.is_empty() {
             eprintln!("ERROR_3");
             return Err(Status::Decompress);
         }
 
-        Err(Status::Success)
+        Ok(bytes)
         // FileListing::read_listing(save_project, &inflated_data, &self.m_console)
     }
 }
 
 pub enum Status {
-    Success = 0,
+    // Success = 0,
     Compress = -1,
     Decompress = -2,
     MallocFailed = -3,
