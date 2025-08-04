@@ -5,14 +5,14 @@ use lzx_rs::x_decompress;
 
 pub trait ConsoleParser {
     // fn discover_save_layout(&self, root_folder: &PathBuf) -> SaveLayout;
-    fn inflate_from_layout(&mut self, the_save: &SaveProject, in_file_path: &PathBuf) -> Result<Vec<u8>, Status>;
+    fn inflate_from_layout(&mut self, in_file_path: &PathBuf) -> Result<Vec<u8>, Status>;
 
     // fn deflate_to_save(&self, save_project: &SaveProject, the_settings: &WriteSettings) -> i32;
     // fn supply_required_defaults(&self, save_project: &SaveProject) -> ();
 
     // protected:
 
-    fn inflate_listing(&self, save_project: &SaveProject) -> Result<Vec<u8>, Status>;
+    fn inflate_listing(&self) -> Result<Vec<u8>, Status>;
     // fn deflate_listing(
     //     &self,
     //     game_data_path: &PathBuf,
@@ -112,12 +112,11 @@ impl Xbox360Dat {
 impl ConsoleParser for Xbox360Dat {
     fn inflate_from_layout(
         &mut self,
-        save_project: &SaveProject,
         the_file_path: &PathBuf,
     ) -> Result<Vec<u8>, Status> {
         self.m_file_path = Some(the_file_path.clone());
 
-        let status: Result<Vec<u8>, Status> = self.inflate_listing(save_project);
+        let status: Result<Vec<u8>, Status> = self.inflate_listing();
         let bytes: Vec<u8> = match status {
             Ok(bytes) => bytes,
             _ => {
@@ -130,7 +129,7 @@ impl ConsoleParser for Xbox360Dat {
         return Ok(bytes);
     }
 
-    fn inflate_listing(&self, save_project: &SaveProject) -> Result<Vec<u8>, Status> {
+    fn inflate_listing(&self) -> Result<Vec<u8>, Status> {
         let file_path: &PathBuf = match &self.m_file_path {
             Some(path) => path,
             None => {
