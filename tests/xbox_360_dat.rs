@@ -25,30 +25,25 @@ impl ConsoleParser for Xbox360Dat {
             None => Err(Status::FileError)?,
         };
 
-        let file_data: Vec<u8> = match fs::read(file_path) {
-            Ok(bytes) => bytes,
-            Err(_) => Err(Status::FileError)?,
-        };
+        let file_data: Vec<u8> = fs::read(file_path).map_err(|_| Status::FileError)?;
 
         if file_data.len() < 12 {
             return Err(Status::FileError);
         }
         let mut reader: Cursor<Vec<u8>> = Cursor::new(file_data);
 
-        let src_size: u32 = match reader.read_u32::<BigEndian>() {
-            Ok(val) => val.wrapping_sub(8),
-            Err(_) => Err(Status::FileError)?,
-        };
+        let src_size: u32 = reader
+            .read_u32::<BigEndian>()
+            .map_err(|_| Status::FileError)?
+            .wrapping_sub(8);
 
-        let _skip: () = match reader.read_i32::<BigEndian>() {
-            Ok(_) => (),
-            Err(_) => Err(Status::FileError)?,
-        };
+        let _skip: i32 = reader
+            .read_i32::<BigEndian>()
+            .map_err(|_| Status::FileError)?;
 
-        let file_size: u32 = match reader.read_u32::<BigEndian>() {
-            Ok(val) => val,
-            Err(_) => Err(Status::FileError)?,
-        };
+        let file_size: u32 = reader
+            .read_u32::<BigEndian>()
+            .map_err(|_| Status::FileError)?;
 
         // Allocate output buffer
         let mut inflated_data: Vec<u8> = vec![0; file_size as usize];
@@ -57,10 +52,10 @@ impl ConsoleParser for Xbox360Dat {
         let src_slice: &[u8] = &reader.into_inner()[8..(8 + src_size as usize)];
         let dst_slice: &mut [u8] = &mut inflated_data;
 
-        let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice) {
-            Ok(_) => dst_slice.to_vec(),
-            Err(_) => Err(Status::Decompress)?,
-        };
+        let bytes: Vec<u8> =
+            match x_decompress(src_slice, dst_slice).map_err(|_| Status::Decompress)? {
+                _ => dst_slice.to_vec(),
+            };
 
         if inflated_data.is_empty() {
             return Err(Status::Decompress);
