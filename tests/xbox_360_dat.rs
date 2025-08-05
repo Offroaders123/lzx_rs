@@ -20,10 +20,7 @@ impl ConsoleParser for Xbox360Dat {
     }
 
     fn inflate_listing(&self) -> Result<Vec<u8>, Status> {
-        let file_path: &PathBuf = match &self.file_path {
-            Some(path) => path,
-            None => Err(Status::FileError)?,
-        };
+        let file_path: &PathBuf = self.file_path.as_ref().ok_or(Status::FileError)?;
 
         let file_data: Vec<u8> = fs::read(file_path).map_err(|_| Status::FileError)?;
 
