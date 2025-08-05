@@ -4,23 +4,8 @@ use byteorder::{BigEndian, ReadBytesExt};
 use lzx_rs::x_decompress;
 
 pub trait ConsoleParser {
-    // fn discover_save_layout(&self, root_folder: &PathBuf) -> SaveLayout;
     fn inflate_from_layout(&mut self, in_file_path: &PathBuf) -> Result<Vec<u8>, Status>;
-
-    // fn deflate_to_save(&self, save_project: &SaveProject, the_settings: &WriteSettings) -> i32;
-    // fn supply_required_defaults(&self, save_project: &SaveProject) -> ();
-
-    // protected:
-
     fn inflate_listing(&self) -> Result<Vec<u8>, Status>;
-    // fn deflate_listing(
-    //     &self,
-    //     game_data_path: &PathBuf,
-    //     inflated_data: &Buffer,
-    //     deflated_data: &Buffer,
-    // ) -> i32;
-
-    // fn read_file_info(&self, save_project: &SaveProject) -> ();
 }
 
 pub struct SaveLayout;
@@ -35,12 +20,6 @@ impl Buffer {
         Self { data: Vec::new() }
     }
 
-    pub fn with_capacity(n: usize) -> Self {
-        Self {
-            data: Vec::with_capacity(n),
-        }
-    }
-
     pub fn allocate(&mut self, n: usize) -> bool {
         self.data = vec![0; n];
         true
@@ -50,18 +29,6 @@ impl Buffer {
         self.data.len()
     }
 
-    pub fn size_mut(&mut self) -> &mut usize {
-        // Not idiomatic — but you can implement this way if needed
-        let len = self.data.len();
-        // Create a dummy mutable reference (rarely needed in idiomatic code)
-        // In practice, redesign to avoid this pattern
-        panic!("Avoid using size_mut like C++; restructure your logic.")
-    }
-
-    // pub fn size_ref(&self) -> &usize {
-    //     &self.data.len()
-    // }
-
     pub fn data(&self) -> &[u8] {
         &self.data
     }
@@ -70,40 +37,18 @@ impl Buffer {
         &mut self.data
     }
 
-    pub fn span(&self) -> &[u8] {
-        &self.data
-    }
-
-    pub fn span_mut(&mut self) -> &mut [u8] {
-        &mut self.data
-    }
-
-    pub fn clear(&mut self) {
-        self.data.clear();
-    }
-
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
-    }
-
-    pub fn into_inner(self) -> Vec<u8> {
-        self.data
     }
 }
 
 pub struct Xbox360Dat {
-    m_console: Console,
     m_file_path: Option<PathBuf>,
-}
-
-pub enum Console {
-    Xbox360,
 }
 
 impl Xbox360Dat {
     pub fn new() -> Self {
         Xbox360Dat {
-            m_console: Console::Xbox360,
             m_file_path: None,
         }
     }
@@ -130,11 +75,6 @@ impl ConsoleParser for Xbox360Dat {
             }
             Err(_) => Err(Status::FileError)?,
         };
-
-        // if (!saveProject.m_stateSettings.shouldDecompress()) {
-        //     int status = FileListing::readListing(saveProject, fileData, m_console);
-        //     return status;
-        // }
 
         if file_data.size() < 12 {
             return Err(Status::FileError);
@@ -176,12 +116,10 @@ impl ConsoleParser for Xbox360Dat {
         }
 
         Ok(bytes)
-        // FileListing::read_listing(save_project, &inflated_data, &self.m_console)
     }
 }
 
 pub enum Status {
-    // Success = 0,
     Compress = -1,
     Decompress = -2,
     MallocFailed = -3,
