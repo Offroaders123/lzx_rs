@@ -48,9 +48,7 @@ pub struct Xbox360Dat {
 
 impl Xbox360Dat {
     pub fn new() -> Self {
-        Xbox360Dat {
-            m_file_path: None,
-        }
+        Xbox360Dat { m_file_path: None }
     }
 }
 
@@ -108,7 +106,7 @@ impl ConsoleParser for Xbox360Dat {
 
         let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice) {
             Ok(_) => dst_slice.to_vec(),
-            Err(err) => Err(Status::Decompress)?,
+            Err(_) => Err(Status::Decompress)?,
         };
 
         if inflated_data.is_empty() {
