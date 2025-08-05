@@ -3,25 +3,7 @@ use std::{fs, io::Cursor, path::PathBuf};
 use byteorder::{BigEndian, ReadBytesExt};
 use lzx_rs::x_decompress;
 
-pub trait ConsoleParser {
-    fn inflate_from_layout(&mut self, file_path: &PathBuf) -> Result<Vec<u8>, Status>;
-    fn inflate_listing(&self) -> Result<Vec<u8>, Status>;
-}
-
-pub struct Xbox360Dat {
-    file_path: Option<PathBuf>,
-}
-
-impl ConsoleParser for Xbox360Dat {
-    fn inflate_from_layout(&mut self, file_path: &PathBuf) -> Result<Vec<u8>, Status> {
-        self.file_path = Some(file_path.clone());
-
-        self.inflate_listing()
-    }
-
-    fn inflate_listing(&self) -> Result<Vec<u8>, Status> {
-        let file_path: &PathBuf = self.file_path.as_ref().ok_or(Status::FileError)?;
-
+pub fn inflate_listing(file_path: &PathBuf) -> Result<Vec<u8>, Status> {
         let file_data: Vec<u8> = fs::read(file_path).map_err(|_| Status::FileError)?;
 
         if file_data.len() < 12 {
@@ -59,7 +41,6 @@ impl ConsoleParser for Xbox360Dat {
         }
 
         Ok(bytes)
-    }
 }
 
 pub enum Status {
