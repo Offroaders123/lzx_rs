@@ -11,36 +11,6 @@ pub trait ConsoleParser {
 pub struct SaveLayout;
 pub struct SaveProject;
 pub struct WriteSettings;
-pub struct Buffer {
-    data: Vec<u8>,
-}
-
-impl Buffer {
-    pub fn new() -> Self {
-        Self { data: Vec::new() }
-    }
-
-    pub fn allocate(&mut self, n: usize) -> bool {
-        self.data = vec![0; n];
-        true
-    }
-
-    pub fn size(&self) -> usize {
-        self.data.len()
-    }
-
-    pub fn data(&self) -> &[u8] {
-        &self.data
-    }
-
-    pub fn data_mut(&mut self) -> &mut [u8] {
-        &mut self.data
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
-    }
-}
 
 pub struct Xbox360Dat {
     m_file_path: Option<PathBuf>,
@@ -65,19 +35,15 @@ impl ConsoleParser for Xbox360Dat {
             None => Err(Status::FileError)?,
         };
 
-        let file_data: Buffer = match fs::read(file_path) {
-            Ok(bytes) => {
-                let mut buf: Buffer = Buffer::new();
-                buf.data = bytes;
-                buf
-            }
+        let file_data: Vec<u8> = match fs::read(file_path) {
+            Ok(bytes) => bytes,
             Err(_) => Err(Status::FileError)?,
         };
 
-        if file_data.size() < 12 {
+        if file_data.len() < 12 {
             return Err(Status::FileError);
         }
-        let mut reader = Cursor::new(file_data.data());
+        let mut reader = Cursor::new(file_data);
 
         let src_size: u32 = match reader.read_u32::<BigEndian>() {
             Ok(val) => val.wrapping_sub(8),
@@ -95,14 +61,11 @@ impl ConsoleParser for Xbox360Dat {
         };
 
         // Allocate output buffer
-        let mut inflated_data: Buffer = Buffer::new();
-        if !inflated_data.allocate(file_size as usize) {
-            return Err(Status::MallocFailed);
-        }
+        let mut inflated_data: Vec<u8> = vec![0; file_size as usize];
 
         // Perform decompression
         let src_slice: &[u8] = &reader.into_inner()[8..(8 + src_size as usize)];
-        let dst_slice: &mut [u8] = inflated_data.data_mut();
+        let dst_slice: &mut [u8] = &mut inflated_data;
 
         let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice) {
             Ok(_) => dst_slice.to_vec(),
