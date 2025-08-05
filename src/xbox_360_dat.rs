@@ -1,11 +1,9 @@
-use std::{fs, io::Cursor, path::PathBuf};
+use std::io::Cursor;
 
 use crate::x_decompress;
 use byteorder::{BigEndian, ReadBytesExt};
 
-pub fn inflate_listing(file_path: &PathBuf) -> Result<Vec<u8>, Status> {
-    let file_data: Vec<u8> = fs::read(file_path).map_err(|_| Status::FileError)?;
-
+pub fn inflate_listing(file_data: Vec<u8>) -> Result<Vec<u8>, Status> {
     if file_data.len() < 12 {
         return Err(Status::FileError);
     }
@@ -42,6 +40,7 @@ pub fn inflate_listing(file_path: &PathBuf) -> Result<Vec<u8>, Status> {
     Ok(bytes)
 }
 
+#[derive(Debug)]
 pub enum Status {
     Compress = -1,
     Decompress = -2,
