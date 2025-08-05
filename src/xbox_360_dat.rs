@@ -1,7 +1,7 @@
 use std::{fs, io::Cursor, path::PathBuf};
 
+use crate::x_decompress;
 use byteorder::{BigEndian, ReadBytesExt};
-use lzx_rs::x_decompress;
 
 pub fn inflate_listing(file_path: &PathBuf) -> Result<Vec<u8>, Status> {
     let file_data: Vec<u8> = fs::read(file_path).map_err(|_| Status::FileError)?;
