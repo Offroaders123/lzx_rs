@@ -8,18 +8,8 @@ pub trait ConsoleParser {
     fn inflate_listing(&self) -> Result<Vec<u8>, Status>;
 }
 
-pub struct SaveLayout;
-pub struct SaveProject;
-pub struct WriteSettings;
-
 pub struct Xbox360Dat {
     m_file_path: Option<PathBuf>,
-}
-
-impl Xbox360Dat {
-    pub fn new() -> Self {
-        Xbox360Dat { m_file_path: None }
-    }
 }
 
 impl ConsoleParser for Xbox360Dat {
