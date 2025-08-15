@@ -31,7 +31,10 @@ pub fn inflate_listing(file_data: Vec<u8>) -> Result<Vec<u8>, Status> {
     let src_slice: &[u8] = &reader.into_inner()[8..(8 + src_size as usize)];
     let dst_slice: &mut [u8] = &mut inflated_data;
 
-    let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice).map_err(|_| Status::Decompress)? {
+    let bytes: Vec<u8> = match x_decompress(src_slice, dst_slice).map_err(|e| {
+        println!("{e}");
+        Status::Decompress
+    })? {
         _ => dst_slice.to_vec(),
     };
 
