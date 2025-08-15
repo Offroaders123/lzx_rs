@@ -22,6 +22,8 @@ pub fn inflate_listing(file_data: Vec<u8>) -> Result<Vec<u8>, Status> {
         .read_u32::<BigEndian>()
         .map_err(|_| Status::FileError)?;
 
+    println!("{src_size}, {_skip}, {file_size}");
+
     // Allocate output buffer
     let mut inflated_data: Vec<u8> = vec![0; file_size as usize];
 
